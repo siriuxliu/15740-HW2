@@ -2,11 +2,15 @@ CC = gcc
 AS = as
 CFLAGS = -O
 LFLAGS =  -lrt -lm
+CXXFLAGS = -O0 --std=c++11
+CXXLDFLAGS = -lrt -lm -lpthread -fopenmp
+CXX = g++
 		 
-all: mountain linesize lock
+all: mountain linesize lock cores smt mmt
 
 func_time.o: func_time.c func_time.h
 	$(CC) $(CFLAGS) -c func_time.c
+
 perf.o: perf.c perf.h
 	$(CC) $(CFLAGS) -c perf.c
 
@@ -15,14 +19,24 @@ mountain: mountain.c func_time.o perf.o
 
 linesize: linesize.c linesize.o 
 	$(CC) -g $(CFLAGS) linesize.c perf.o -o linesize -lpthread $(LFLAGS)
+
 lock: lock.c perf.o func_time.o
 	$(CC) -g lock.c perf.o func_time.o -o lock -lpthread  $(LFLAGS)
+
+cores: cores.cpp
+	$(CXX) $(CXXFLAGS) $< -o $@ $(CXXLDFLAGS)
+
+smt: smt.cpp
+	$(CXX) $(CXXFLAGS) $< -o $@ $(CXXLDFLAGS)
+
+mmt: mmt.cpp
+	$(CXX) $(CXXFLAGS) $< -o $@ $(CXXLDFLAGS)
 
 #mountain: mountain.c perf.o
 #	$(CC) $(CFLAGS) mountain.c perf.o -o mountain $(LFLAGS) 
 
 clean:
-	rm -f *.o *.png *.txt mountain perf func_time linesize lock *~
+	rm -f *.o *.png *.txt mountain perf func_time linesize lock cores smt mmt *~
 
 #core: core.c perf.o func_time.o
 #	$(CC) -g $(CFLAGS) core.c perf.o func_time.o -o core -lpthread  $(LFLAGS)
